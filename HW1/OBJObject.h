@@ -13,19 +13,24 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
+#include <string>
+#include <fstream>
+#include <iostream>
 
-class OBJObject
-{
+using namespace std;
+using namespace glm;
+
+class OBJObject {
 private:
-std::vector<unsigned int> indices;
-std::vector<glm::vec3> vertices;
-std::vector<glm::vec3> normals;
-glm::mat4 toWorld;
+	vector<unsigned int> indices;
+	vector<vec3> vertices;
+	vector<vec3> normals;
+	vector<vec3> colors;
+	mat4 toWorld;
 
 public:
-	OBJObject(const char* filepath);
-
-	void parse(const char* filepath);
+	OBJObject(string filepath);
+	void parse(string filepath);
 	void draw();
 };
 

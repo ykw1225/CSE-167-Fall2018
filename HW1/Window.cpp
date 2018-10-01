@@ -1,17 +1,26 @@
 #include "Window.h"
 
 const char* window_title = "GLFW Starter Project";
+
+// Cubic Obj
 Cube cube(5.0f);
+
+// Objects
+vector<OBJObject*> Window::objects;
 
 int Window::width;
 int Window::height;
 
-void Window::initialize_objects()
-{
+void Window::addObj(string filePath) {
+	objects.push_back(new OBJObject(filePath));
 }
 
-void Window::clean_up()
-{
+void Window::initialize_objects(){
+	addObj("bunny.obj");
+}
+
+void Window::clean_up(){
+	for (auto i : objects) delete i;
 }
 
 GLFWwindow* Window::create_window(int width, int height)
@@ -56,38 +65,47 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 #endif
 	Window::width = width;
 	Window::height = height;
+
 	// Set the viewport size
 	glViewport(0, 0, width, height);
+
 	// Set the matrix mode to GL_PROJECTION to determine the proper camera properties
 	glMatrixMode(GL_PROJECTION);
+
 	// Load the identity matrix
 	glLoadIdentity();
+
 	// Set the perspective of the projection viewing frustum
 	gluPerspective(60.0, double(width) / (double)height, 1.0, 1000.0);
+
 	// Move camera back 20 units so that it looks at the origin (or else it's in the origin)
-	glTranslatef(0, 0, -20);
+	glTranslatef(0, 0, -5);
 }
 
 void Window::idle_callback()
 {
 	// Perform any updates as necessary. Here, we will spin the cube slightly.
-	cube.update();
+	//cube.update();
 }
 
 void Window::display_callback(GLFWwindow* window)
 {
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	// Set the matrix mode to GL_MODELVIEW
 	glMatrixMode(GL_MODELVIEW);
+
 	// Load the identity matrix
 	glLoadIdentity();
 	
 	// Render objects
-	cube.draw();
+	//cube.draw();
+	for (auto i : objects) i->draw();
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
+
 	// Swap buffers
 	glfwSwapBuffers(window);
 }
