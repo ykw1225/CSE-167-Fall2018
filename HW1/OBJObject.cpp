@@ -1,6 +1,7 @@
 #include "OBJObject.h"
 
 OBJObject::OBJObject(string filepath) {
+	angle = 0.0f;
 	toWorld = mat4(1.0f);
 	parse(filepath);
 }
@@ -13,9 +14,6 @@ void OBJObject::parse(string filepath) {
 	// open the file
 	readFile.open(filepath, ios::in | ios::binary);
 
-	// check if the file is open correctly
-	if (!readFile.is_open()) cout << "Fail to read file" << filepath << endl;
-	
 	// get next block
 	auto nextBlock = readFile.peek();
 
@@ -74,4 +72,14 @@ void OBJObject::draw() {
 	// Pop the save state off the matrix stack
 	// This will undo the multiply we did earlier
 	glPopMatrix();
+}
+
+void OBJObject::update(){
+	spin(1.0f);
+}
+
+void OBJObject::spin(float deg){
+	angle += deg;
+	if (angle > 360.0f || angle < -360.0f) angle = 0.0f;
+	toWorld = rotate(glm::mat4(1.0f), angle / 180.0f * pi<float>(), vec3(0.0f, 1.0f, 0.0f));
 }

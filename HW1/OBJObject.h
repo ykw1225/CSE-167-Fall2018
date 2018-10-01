@@ -27,11 +27,14 @@ private:
 	vector<vec3> normals;
 	vector<vec3> colors;
 	mat4 toWorld;
+	float angle;
 
 public:
 	OBJObject(string filepath);
 	void parse(string filepath);
 	void draw();
+	void update();
+	void spin(float);
 };
 
 #endif

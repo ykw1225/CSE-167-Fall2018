@@ -8,6 +8,9 @@ Cube cube(5.0f);
 // Objects
 vector<OBJObject*> Window::objects;
 
+// pointer to current display obj
+OBJObject* currObj;
+
 int Window::width;
 int Window::height;
 
@@ -17,6 +20,9 @@ void Window::addObj(string filePath) {
 
 void Window::initialize_objects(){
 	addObj("bunny.obj");
+	addObj("dragon.obj");
+	addObj("bear.obj");
+	currObj = objects[0];
 }
 
 void Window::clean_up(){
@@ -79,13 +85,14 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 	gluPerspective(60.0, double(width) / (double)height, 1.0, 1000.0);
 
 	// Move camera back 20 units so that it looks at the origin (or else it's in the origin)
-	glTranslatef(0, 0, -5);
+	glTranslatef(0, 0, -20);
 }
 
 void Window::idle_callback()
 {
 	// Perform any updates as necessary. Here, we will spin the cube slightly.
 	//cube.update();
+	currObj->update();
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -101,7 +108,7 @@ void Window::display_callback(GLFWwindow* window)
 	
 	// Render objects
 	//cube.draw();
-	for (auto i : objects) i->draw();
+	currObj->draw();
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -122,4 +129,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 	}
+	else if (key == GLFW_KEY_F1) currObj = objects[0];
+	else if (key == GLFW_KEY_F2) currObj = objects[1];
+	else if (key == GLFW_KEY_F3) currObj = objects[2];
 }
