@@ -66,7 +66,7 @@ void setup_opengl_settings()
 	// Setup materials
 	setup_materials();
 	// Setup lighting
-	setup_lighting();                                           
+	// setup_lighting();                                           
 }
 
 void print_versions()

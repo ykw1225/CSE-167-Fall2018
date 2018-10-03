@@ -31,6 +31,7 @@ public:
 
 	static void addObj(string);
 	static vector<OBJObject*> objects;
+	static GLfloat currPoint;
 };
 
 #endif

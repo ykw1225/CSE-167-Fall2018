@@ -2,6 +2,7 @@
 
 OBJObject::OBJObject(string filepath) {
 	angle = 0.0f;
+	point = 1.0f;
 	toWorld = mat4(1.0f);
 	parse(filepath);
 }
@@ -36,7 +37,15 @@ void OBJObject::parse(string filepath) {
 		else if (block == "vn") {
 			readFile >> vnx >> vny >> vnz;
 			normals.push_back(vec3(vnx, vny, vnz));
-			colors.push_back(normalize(vec3(vnx, vny, vnz)));
+
+			// make a color vector from normal
+			vec3 color = normalize(vec3(vnx, vny, vnz)) * 0.5f + 0.5f;
+
+			//if (color.x < 0.0f || color.x > 1.0f) cout << "Bad color!!!" << color.x << endl;
+			//else if (color.y < 0.0f || color.y > 1.0f) cout << "Bad color!!!" << color.y << endl;
+			//else if (color.z < 0.0f || color.z > 1.0f) cout << "Bad color!!!" << color.z << endl;
+
+			colors.push_back(color);
 		}
 
 		else {
@@ -74,11 +83,11 @@ void OBJObject::draw() {
 	glPopMatrix();
 }
 
-void OBJObject::update(){
+void OBJObject::update() {
 	spin(1.0f);
 }
 
-void OBJObject::spin(float deg){
+void OBJObject::spin(float deg) {
 	angle += deg;
 	if (angle > 360.0f || angle < -360.0f) angle = 0.0f;
 	toWorld = rotate(glm::mat4(1.0f), angle / 180.0f * pi<float>(), vec3(0.0f, 1.0f, 0.0f));

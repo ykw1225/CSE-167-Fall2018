@@ -35,6 +35,7 @@ public:
 	void draw();
 	void update();
 	void spin(float);
+	GLfloat point;
 };
 
 #endif

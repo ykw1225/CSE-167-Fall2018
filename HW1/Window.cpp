@@ -11,6 +11,9 @@ vector<OBJObject*> Window::objects;
 // pointer to current display obj
 OBJObject* currObj;
 
+// tracker of current point size
+GLfloat Window::currPoint;
+
 int Window::width;
 int Window::height;
 
@@ -18,22 +21,20 @@ void Window::addObj(string filePath) {
 	objects.push_back(new OBJObject(filePath));
 }
 
-void Window::initialize_objects(){
+void Window::initialize_objects() {
 	addObj("bunny.obj");
 	addObj("dragon.obj");
 	addObj("bear.obj");
 	currObj = objects[0];
 }
 
-void Window::clean_up(){
+void Window::clean_up() {
 	for (auto i : objects) delete i;
 }
 
-GLFWwindow* Window::create_window(int width, int height)
-{
+GLFWwindow* Window::create_window(int width, int height) {
 	// Initialize GLFW.
-	if (!glfwInit())
-	{
+	if (!glfwInit()) {
 		fprintf(stderr, "Failed to initialize GLFW\n");
 		return NULL;
 	}
@@ -45,8 +46,7 @@ GLFWwindow* Window::create_window(int width, int height)
 	GLFWwindow* window = glfwCreateWindow(width, height, window_title, NULL, NULL);
 
 	// Check if the window could not be created
-	if (!window)
-	{
+	if (!window) {
 		fprintf(stderr, "Failed to open GLFW window.\n");
 		glfwTerminate();
 		return NULL;
@@ -64,8 +64,7 @@ GLFWwindow* Window::create_window(int width, int height)
 	return window;
 }
 
-void Window::resize_callback(GLFWwindow* window, int width, int height)
-{
+void Window::resize_callback(GLFWwindow* window, int width, int height) {
 #ifdef __APPLE__
 	glfwGetFramebufferSize(window, &width, &height); // In case your Mac has a retina display
 #endif
@@ -88,15 +87,13 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 	glTranslatef(0, 0, -20);
 }
 
-void Window::idle_callback()
-{
+void Window::idle_callback() {
 	// Perform any updates as necessary. Here, we will spin the cube slightly.
 	//cube.update();
 	currObj->update();
 }
 
-void Window::display_callback(GLFWwindow* window)
-{
+void Window::display_callback(GLFWwindow* window) {
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -117,14 +114,11 @@ void Window::display_callback(GLFWwindow* window)
 	glfwSwapBuffers(window);
 }
 
-void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
+void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	// Check for a key press
-	if (action == GLFW_PRESS)
-	{
+	if (action == GLFW_PRESS) {
 		// Check if escape was pressed
-		if (key == GLFW_KEY_ESCAPE)
-		{
+		if (key == GLFW_KEY_ESCAPE) {
 			// Close the window. This causes the program to also terminate.
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
@@ -132,4 +126,15 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	else if (key == GLFW_KEY_F1) currObj = objects[0];
 	else if (key == GLFW_KEY_F2) currObj = objects[1];
 	else if (key == GLFW_KEY_F3) currObj = objects[2];
+	else if (key == GLFW_KEY_P) {
+		if (mods == GLFW_MOD_SHIFT) {
+			glGetFloatv(GL_POINT_SIZE, &currPoint);
+			glPointSize(++currPoint);
+		}
+		else if (mods != GLFW_MOD_SHIFT) {
+			glGetFloatv(GL_POINT_SIZE, &currPoint);
+			glPointSize(--currPoint);
+		}
+		if (currPoint >= 1.0f) objects[0]->point = currPoint;
+	}
 }
