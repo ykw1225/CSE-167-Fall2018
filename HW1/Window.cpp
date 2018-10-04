@@ -135,6 +135,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			glGetFloatv(GL_POINT_SIZE, &currPoint);
 			glPointSize(--currPoint);
 		}
-		if (currPoint >= 1.0f) objects[0]->point = currPoint;
+		if (currPoint >= 1.0f) currObj->point = currPoint;
 	}
+	else if (key == GLFW_KEY_C) currObj->alterColor = !currObj->alterColor;
 }

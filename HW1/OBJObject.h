@@ -16,6 +16,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 using namespace glm;
@@ -24,18 +26,21 @@ class OBJObject {
 private:
 	mat4 toWorld;
 	vector<unsigned int> indices;
-	vector<vec3> vertices, normals, colors;
+	vector<vec3> vertices, normals, colors, randVer, altColors;
 	float angle, xMin, xMax, yMin, yMax, zMin, zMax;
+	void spin(float);
+	void minMax(float, float, float);
+	void centerAndScale();
+	float randFloat(float, float);
+	void verMove();
 
 public:
 	float point;
+	bool alterColor;
 	OBJObject(string filepath);
 	void parse(string filepath);
 	void draw();
 	void update();
-	void spin(float);
-	void minMax(float, float, float);
-	void centerAndScale();
 };
 
 #endif
