@@ -22,20 +22,20 @@ using namespace glm;
 
 class OBJObject {
 private:
-	vector<unsigned int> indices;
-	vector<vec3> vertices;
-	vector<vec3> normals;
-	vector<vec3> colors;
 	mat4 toWorld;
-	float angle;
+	vector<unsigned int> indices;
+	vector<vec3> vertices, normals, colors;
+	float angle, xMin, xMax, yMin, yMax, zMin, zMax;
 
 public:
+	float point;
 	OBJObject(string filepath);
 	void parse(string filepath);
 	void draw();
 	void update();
 	void spin(float);
-	GLfloat point;
+	void minMax(float, float, float);
+	void centerAndScale();
 };
 
 #endif
