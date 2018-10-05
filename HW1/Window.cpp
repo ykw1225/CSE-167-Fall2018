@@ -22,9 +22,15 @@ void Window::addObj(string filePath) {
 }
 
 void Window::initialize_objects() {
-	addObj("bunny.obj");
-	addObj("dragon.obj");
-	addObj("bear.obj");
+    string bunny = "bunny.obj", dragon = "dragon.obj", bear = "bear.obj";
+#ifdef __APPLE__
+    bunny = "/Users/KIT/Desktop/CSE 167/CSE 167/bunny.obj";
+    dragon = "/Users/KIT/Desktop/CSE 167/CSE 167/dragon.obj";
+    bear = "/Users/KIT/Desktop/CSE 167/CSE 167/bear.obj";
+#endif
+	addObj(bunny);
+	addObj(dragon);
+	addObj(bear);
 	currObj = objects[0];
 }
 

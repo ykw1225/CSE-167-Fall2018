@@ -18,6 +18,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <cfloat>
 
 using namespace std;
 using namespace glm;
