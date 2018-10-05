@@ -5,6 +5,7 @@ float OBJObject::randFloat(float min, float max) {
 }
 
 OBJObject::OBJObject(string filepath) {
+	speed = 0.003f;
 	alterColor = false;
 	angle = 0.0f;
 	point = 1.0f;
@@ -76,9 +77,9 @@ void OBJObject::parse(string filepath) {
 	// randomly initialize vertices within the min and max
 	srand(static_cast <unsigned> (time(0)));
 	for (int i = 0; i < vertices.size(); i++) {
-		auto randX = randFloat(xMin*4.0f, xMax*4.0f);
-		auto randY = randFloat(yMin*4.0f, yMax*4.0f);
-		auto randZ = randFloat(zMin*4.0f, zMax*4.0f);
+		auto randX = randFloat(xMin*5.0f, xMax*5.0f);
+		auto randY = randFloat(yMin*5.0f, yMax*5.0f);
+		auto randZ = randFloat(zMin*5.0f, zMax*5.0f);
 		randVer.push_back(vec3(randX, randY, randZ));
 	}
 }
@@ -109,6 +110,7 @@ void OBJObject::draw() {
 void OBJObject::update() {
 	spin(1.0f);
 	verMove();
+	speed *= 1.005f;
 }
 
 void OBJObject::spin(float deg) {
@@ -140,7 +142,8 @@ void OBJObject::centerAndScale() {
 	// centering and scaling the model
 	for (int i = 0; i < vertices.size(); i++) {
 		vertices[i] -= center;
-		vertices[i] *= 1.0f / scaler;
+		vertices[i] /= scaler;
+		vertices[i] *= 4.0f;
 	}
 
 	// determine the new min and max after scaling
@@ -148,7 +151,7 @@ void OBJObject::centerAndScale() {
 	for (auto i : vertices) minMax(i.x, i.y, i.z);
 }
 
-void floatChange(float &f, float distance) {f = f + distance * 0.003f;}
+void OBJObject::floatChange(float &f, float distance) {f = f + distance * speed;}
 
 void OBJObject::verMove() {
 	for (int i = 0; i < vertices.size(); i++) {

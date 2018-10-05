@@ -28,12 +28,13 @@ private:
 	mat4 toWorld;
 	vector<unsigned int> indices;
 	vector<vec3> vertices, normals, colors, randVer, altColors;
-	float angle, xMin, xMax, yMin, yMax, zMin, zMax;
+	float angle, xMin, xMax, yMin, yMax, zMin, zMax, speed;
 	void spin(float);
 	void minMax(float, float, float);
 	void centerAndScale();
 	float randFloat(float, float);
 	void verMove();
+	void floatChange(float&, float);
 
 public:
 	float point;
