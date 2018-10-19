@@ -199,7 +199,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		else if (mods != GLFW_MOD_SHIFT) { for (auto i : objects) i->scaleDown(); }
 	}
 	else if (key == GLFW_KEY_N) {
-		if (mods != GLFW_MOD_SHIFT) isPhong = isPhong ? false : true;
+		isPhong = isPhong ? false : true;
 	}
 	else if (isPhong) {
 		lightControl = true;
@@ -207,36 +207,48 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			currObj->potLightOn = !currObj->potLightOn;
 			objects[3]->toWorld = translate(mat4(1.0f), currObj->potLight.position * 6.5f);
 			objects[3]->toWorld = scale(mat4(1.0f), vec3(0.25f, 0.25f, 0.25f)) * objects[3]->toWorld;
+			objects[3]->material = currObj->material;
 		}
 		else if (key == GLFW_KEY_2) {
 			currObj->spotLightOn = !currObj->spotLightOn;
 			objects[3]->toWorld = translate(mat4(1.0f), currObj->spotLight.position * 6.5f);
 			objects[3]->toWorld = scale(mat4(1.0f), vec3(0.25f, 0.25f, 0.25f)) * objects[3]->toWorld;
+			objects[3]->material = currObj->material;
 		}
 		else if (key == GLFW_KEY_3) {
 			currObj->dirLightOn = !currObj->dirLightOn;
 			objects[3]->toWorld = translate(mat4(1.0f), currObj->dirLight.position * 6.5f);
 			objects[3]->toWorld = scale(mat4(1.0f), vec3(0.25f, 0.25f, 0.25f)) * objects[3]->toWorld;
+			objects[3]->material = currObj->material;
 		}
 		else if (key == GLFW_KEY_0) lightControl = !lightControl;
 		if (currObj->spotLightOn) {
 			if (key == GLFW_KEY_E) {
 				if (mods == GLFW_MOD_SHIFT) {
-					//if (currObj->spotLight.exponent < 100.0f)
-						//currObj->spotLightK--;
+					if (currObj->spotLight.diff < 15.0f) {
+						currObj->spotLight.diff += 1.0f;
+					}
 				}
 				else if (mods != GLFW_MOD_SHIFT) {
-					//if (currObj->spotLight.exponent > 0.0f)
-						//currObj->spotLightK++;
+					if (currObj->spotLight.diff > 0.0f) {
+						currObj->spotLight.diff -= 1.0f;
+					}
 				}
+				currObj->spotLight.cutoff = cos(radians(currObj->spotLight.degOut - currObj->spotLight.diff));
 			}
 			else if (key == GLFW_KEY_W) {
 				if (mods == GLFW_MOD_SHIFT) {
-					currObj->spotLight.position *= 1.1;
+					if (currObj->spotLight.degOut < 90.0f) {
+						currObj->spotLight.degOut += 5.0f;
+					}
 				}
 				else if (mods != GLFW_MOD_SHIFT) {
-					currObj->spotLight.position *= 0.9;
+					if (currObj->spotLight.degOut > 15.0f) {
+						currObj->spotLight.degOut -= 5.0f;
+					}
 				}
+				currObj->spotLight.cutoffOut = cos(radians(currObj->spotLight.degOut));
+				currObj->spotLight.cutoff = cos(radians(currObj->spotLight.degOut - currObj->spotLight.diff));
 			}
 		}
 	}
@@ -289,6 +301,16 @@ void Window::cursor_scroll_callback(GLFWwindow* window, double x, double y) {
 			if (y < 0) currObj->spotLight.position *= 1.1f;
 			else if (y > 0) currObj->spotLight.position *= 0.9f;
 			auto curr = currObj->spotLight.position;
+			vec3 movVec = vec3(curr.x - last.x, curr.y - last.y, curr.z - last.z);
+			objects[3]->toWorld = translate(mat4(1.0f), movVec) * objects[3]->toWorld;
+
+		}
+		else if (currObj->dirLightOn) {
+
+			auto last = currObj->dirLight.position;
+			if (y < 0) currObj->dirLight.position *= 1.1f;
+			else if (y > 0) currObj->dirLight.position *= 0.9f;
+			auto curr = currObj->dirLight.position;
 			vec3 movVec = vec3(curr.x - last.x, curr.y - last.y, curr.z - last.z);
 			objects[3]->toWorld = translate(mat4(1.0f), movVec) * objects[3]->toWorld;
 

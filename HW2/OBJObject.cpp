@@ -154,6 +154,7 @@ void OBJObject::draw(GLuint shaderProgram) {
 	glUniform3fv(glGetUniformLocation(shaderProgram, "spotConeDir"), 1, &(spotLight.coneDir[0]));
 	glUniform1f(glGetUniformLocation(shaderProgram, "spotExp"), spotLight.exponent);
 	glUniform1f(glGetUniformLocation(shaderProgram, "spotCutoff"), spotLight.cutoff);
+	glUniform1f(glGetUniformLocation(shaderProgram, "spotCutoffOut"), spotLight.cutoffOut);
 
 	glUniform3fv(glGetUniformLocation(shaderProgram, "dirCol"), 1, &(dirLight.color[0]));
 	glUniform3fv(glGetUniformLocation(shaderProgram, "dirPos"), 1, &(dirLight.position[0]));
@@ -256,44 +257,47 @@ void OBJObject::setupMaterial() {
 	case 0:
 		ambient = vec3(0.1745f, 0.01175f, 0.01175f);
 		diffuse = vec3(0.0f, 0.0f, 0.0f);
-		specular = vec3(0.9f, 0.9f, 0.9f);
+		specular = vec3(0.727811f, 0.626959f, 0.626959f);
 		shininess = 1.0f;
 		break;
 	case 1:
-		ambient = vec3(0.1745f, 0.01175f, 0.01175f);
-		diffuse = vec3(0.9f, 0.9f, 0.9f);
+		ambient = vec3(0.25f, 0.20725f, 0.20725f);
+		diffuse = vec3(1.0f, 0.829f, 0.829f);
 		specular = vec3(0.0f, 0.0f, 0.0f);
 		shininess = 0.0f;
 		break;
 	case 2:
-		ambient = vec3(0.1745f, 0.01175f, 0.01175f);
-		diffuse = vec3(0.7f, 0.7f, 0.7f);
-		specular = vec3(0.7f, 0.7f, 0.7f);
-		shininess = 1.0f;
-		break;
+		ambient = vec3(0.19225f, 0.19225f, 0.19225f);
+		diffuse = vec3(0.50754f, 0.50754f, 0.50754f);
+		specular = vec3(0.508273f, 0.508273f, 0.508273f);
+		shininess = 0.4f;
 		break;
 	case 3:
-		ambient = vec3(1.0f, 1.0f, 1.0f);
+		ambient = vec3(0.0f, 0.0f, 0.0f);
 		diffuse = specular = vec3(0.0f, 0.0f, 0.0f);
-		shininess = 1.0f;
+		shininess = 0.0f;
 		break;
 	default:
-		ambient = diffuse = specular = vec3(0.0f, 0.0f, 0.0f);
-		shininess = 1.0f;
+		ambient = diffuse = specular = vec3(0.0f);
+		shininess = 0.0f;
 	}
 	material = mat3(ambient, diffuse, specular);
 }
 
 void OBJObject::setupLights() {
-	potLight.color = vec3(0.0f, 1.0f, 0.0f);
+	potLight.color = vec3(0.1f, 0.1f, 0.1f);
 	potLight.position = vec3(0.0f, -1.0f, 1.0f);
 
-	spotLight.color = vec3(0.0f, 0.0f, 1.0f);
-	spotLight.position = vec3(0.0f, -1.0f, 1.0f);
-	spotLight.coneDir = vec3(0.0f, -1.0f, 1.0f);
+	spotLight.color = vec3(0.1f, 0.1f, 0.1f);
+	spotLight.position = vec3(0.0f, 0.0f, 2.0f);
+	spotLight.coneDir = vec3(0.0f, 0.0f, -2.0f);
 	spotLight.exponent = 1.0f;
-	spotLight.cutoff = (30.0f / 180.0f * pi<float>());
+	spotLight.cutoff = cos(glm::radians(30.0f));
+	spotLight.cutoffOut = cos(glm::radians(45.0f));
+	spotLight.deg = 30.0f;
+	spotLight.degOut = 45.0f;
+	spotLight.diff = 1.0f;
 
-	dirLight.color = vec3(1.0f, 0.0f, 0.0f);
+	dirLight.color = vec3(0.1f, 0.1f, 0.1f);
 	dirLight.position = vec3(0.0f, -1.0f, 1.0f);
 }

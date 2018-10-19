@@ -44,7 +44,11 @@ struct Light {
 	vec3 position;
 	vec3 coneDir;
 	float cutoff;
+	float cutoffOut;
 	float exponent;
+	float deg;
+	float degOut;
+	float diff;
 };
 
 class OBJObject {
@@ -55,7 +59,6 @@ private:
 	GLuint VBO, VAO, EBO;
 	vector<Comb> combs;
 	int mateType;
-	mat3 material;
 
 	void spin(float);
 	void minMax(float, float, float);
@@ -72,6 +75,7 @@ public:
 	float point;
 	bool alterColor, dirLightOn, potLightOn, spotLightOn;
 	Light potLight, spotLight, dirLight;
+	mat3 material;
 
 	OBJObject(string, int);
 	void parse(string);

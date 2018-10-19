@@ -15,6 +15,7 @@ uniform vec3 spotPos;
 uniform vec3 spotConeDir;
 uniform float spotExp;
 uniform float spotCutoff;
+uniform float spotCutoffOut;
 
 uniform vec3 dirCol;
 uniform vec3 dirPos;
@@ -40,7 +41,7 @@ vec3 CalcDirLight();
 vec3 viewDir = normalize(camPos - vert);
 
 void main() {
-	vec3 colorTemp = vec3(0.1745f, 0.01175f, 0.01175f);
+	vec3 colorTemp = material[0];
     if(isPhong){
 		if(potLightOn)	colorTemp += CalcPotLight();
 		if(spotLightOn)	colorTemp += CalcSpotLight();
@@ -56,9 +57,9 @@ vec3 CalcPotLight(){
     vec3 reflectDir		= reflect(-lightDir, norm);
     float spec			= pow(max(dot(viewDir, reflectDir), 0.0f), shininess);
     float distance		= length(dir);
-    float attenuation	= 1.0f / (1.0f * distance);    
+    float attenuation	= 1.0f / (0.3f * distance);    
 
-    vec3 ambient  = potCol * material[0];
+    vec3 ambient  = potCol * material[0] * attenuation;
     vec3 diffuse  = potCol * diff * material[1] * attenuation;
     vec3 specular = potCol * spec * material[2] * attenuation;
 
@@ -72,36 +73,24 @@ vec3 CalcSpotLight() {
     vec3 reflectDir		= reflect(-lightDir, norm);
     float spec			= pow(max(dot(viewDir, reflectDir), 0.0f), shininess);
     float distance		= length(dir);
-    float attenuation	= 1.0f / (1.0f * (distance * distance));
+    float attenuation	= 1.0f / (0.05f * (distance * distance));
     
-    float theta = dot(lightDir, normalize(-spotConeDir));
-	float intensity = 0.0f; // pow(theta, spotExp);
+    float theta		= dot(lightDir, normalize(-spotConeDir));
+	float epsilon   = spotCutoff - spotCutoffOut;
+	float intensity = clamp((theta - spotCutoffOut) / epsilon, 0.0, 1.0);
 
     vec3 ambient  = spotCol * material[0];
     vec3 diffuse  = spotCol * diff * material[1] * attenuation * intensity;
     vec3 specular = spotCol * spec * material[2] * attenuation * intensity;
 
-	if(theta > spotCutoff){
-		vec3 n = normalize(norm);
-        intensity = max(dot(n, lightDir), 0.0f);
-
-        if (intensity > 0.0) {
-            vec3 eye = normalize(camPos);
-            vec3 h = normalize(lightDir + eye);
-            float intSpec = max(dot(h, n), 0.0);
-            vec3 spec = specular * pow(intSpec, shininess);
-        }
-		return max(intensity * diffuse + spec, ambient);
-	}
-
-   	return max(intensity * diffuse + specular, ambient);
+   	return ambient + diffuse + specular;
 }
 
 vec3 CalcDirLight() {
 	vec3 dir		= dirPos - vert;
     vec3 lightDir	= normalize(dir);
 	float diff		= max(dot(norm, lightDir), 0.0f);
-	vec3 reflectDir	= 2 * (dot(norm, lightDir) * norm) - lightDir;
+	vec3 reflectDir	= reflect(-lightDir, norm);
 	float spec		= pow(max(dot(viewDir, reflectDir), 0.0), shininess);
 
 	vec3 ambient	= dirCol * material[0];
