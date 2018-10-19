@@ -11,6 +11,7 @@ layout (location = 1) in vec3 normal;
 layout (location = 2) in vec3 colour;
 
 // Uniform variables can be updated by fetching their location and passing values to that location
+
 uniform mat4 projection;
 uniform mat4 model;
 uniform mat4 view;
@@ -18,11 +19,17 @@ uniform mat4 view;
 // Outputs of the vertex shader are the inputs of the same name of the fragment shader.
 // The default output, gl_Position, should be assigned something. You can define as many
 // extra outputs as you need.
+
+out vec3 vert;
+out vec3 norm;
 out vec3 color;
 
 void main()
 {
     // OpenGL maintains the D matrix so you only need to multiply by P, V (aka C inverse), and M
 	gl_Position = projection * view * model * vec4(vertex, 1.0);
-    color = colour;
+    
+	vert = vertex;
+	norm = normalize(vec3(mat4(transpose(inverse(model))) * vec4(normal, 1.0f)));
+	color = colour;
 }

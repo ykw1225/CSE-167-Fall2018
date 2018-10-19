@@ -14,12 +14,15 @@
 #include "shader.h"
 #include "OBJObject.h"
 
+using namespace std;
+using namespace glm;
+
 class Window {
 public:
 	static int width;
 	static int height;
-	static glm::mat4 P; // P for projection
-	static glm::mat4 V; // V for view
+	static mat4 P; // P for projection
+	static mat4 V; // V for view
 	static void initialize_objects();
 	static void clean_up();
 	static GLFWwindow* create_window(int width, int height);
@@ -28,7 +31,7 @@ public:
 	static void display_callback(GLFWwindow*);
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-	static void addObj(string);
+	static void addObj(string, int);
 	static vector<OBJObject*> objects;
 	static GLfloat currPoint;
 	static void cursor_position_callback(GLFWwindow*, double, double);
@@ -38,6 +41,8 @@ public:
 	static double xCursor, yCursor;
 	static vec3 toTrackBall(vec3);
 	static void leftClicking(vec3, vec3);
+	static bool isPhong, lightControl;
+	static void cursor_scroll_callback(GLFWwindow* window, double x, double y);
 };
 
 #endif

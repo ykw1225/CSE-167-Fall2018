@@ -23,6 +23,12 @@ vec3 Window::mouseInitPos;
 bool Window::leftClick = false;
 bool Window::rightClick = false;
 
+// tracker if using Phong illumination
+bool Window::isPhong = false;
+
+// tracker if using Phong illumination
+bool Window::lightControl = false;
+
 // tracker of the x and y value of cursor
 double Window::xCursor;
 double Window::yCursor;
@@ -36,32 +42,34 @@ double Window::yCursor;
 #endif
 
 // Default camera parameters
-glm::vec3 cam_pos(0.0f, 0.0f, 20.0f);		// e  | Position of camera
-glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
-glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
+vec3 cam_pos(0.0f, 0.0f, 20.0f);		// e  | Position of camera
+vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
+vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
 
 int Window::width;
 int Window::height;
 
-glm::mat4 Window::P;
-glm::mat4 Window::V;
+mat4 Window::P;
+mat4 Window::V;
 
-void Window::addObj(string filePath) {
-	objects.push_back(new OBJObject(filePath));
+void Window::addObj(string filePath, int i) {
+	objects.push_back(new OBJObject(filePath, i));
 }
 
 void Window::initialize_objects() {
 	// cube = new Cube();
 
-	string bunny = "bunny.obj", dragon = "dragon.obj", bear = "bear.obj";
+	string bunny = "bunny.obj", dragon = "dragon.obj", bear = "bear.obj", sphere = "sphere.obj";
 	#ifdef __APPLE__
 		bunny = "/Users/KIT/Desktop/CSE 167/CSE 167/bunny.obj";
 		dragon = "/Users/KIT/Desktop/CSE 167/CSE 167/dragon.obj";
 		bear = "/Users/KIT/Desktop/CSE 167/CSE 167/bear.obj";
+		sphere = "/Users/KIT/Desktop/CSE 167/CSE 167/sphere.obj";
 	#endif
-	addObj(bunny);
-	addObj(dragon);
-	addObj(bear);
+	addObj(bunny, 0);
+	addObj(dragon, 1);
+	addObj(bear, 2);
+	addObj(sphere, 3); objects[3]->toWorld = scale(objects[3]->toWorld, vec3(0.25f, 0.25f, 0.25f));
 	currObj = objects[0];
 
 	// Load the shader program. Make sure you have the correct filepath up top
@@ -132,8 +140,8 @@ void Window::resize_callback(GLFWwindow* window, int width, int height) {
 
 	if (height > 0)
 	{
-		P = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.0f);
-		V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+		P = perspective(45.0f, (float)width / (float)height, 0.1f, 1000.0f);
+		V = lookAt(cam_pos, cam_look_at, cam_up);
 	}
 }
 
@@ -153,6 +161,8 @@ void Window::display_callback(GLFWwindow* window) {
 	// Render the cube
 	// cube->draw(shaderProgram);
 	currObj->draw(shaderProgram);
+	if (isPhong && (currObj->potLightOn || currObj->spotLightOn || currObj->dirLightOn))
+		objects[3]->draw(shaderProgram);
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -188,6 +198,48 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		if (mods == GLFW_MOD_SHIFT) { for (auto i : objects) i->scaleUp(); }
 		else if (mods != GLFW_MOD_SHIFT) { for (auto i : objects) i->scaleDown(); }
 	}
+	else if (key == GLFW_KEY_N) {
+		if (mods != GLFW_MOD_SHIFT) isPhong = isPhong ? false : true;
+	}
+	else if (isPhong) {
+		lightControl = true;
+		if (key == GLFW_KEY_1) {
+			currObj->potLightOn = !currObj->potLightOn;
+			objects[3]->toWorld = translate(mat4(1.0f), currObj->potLight.position * 6.5f);
+			objects[3]->toWorld = scale(mat4(1.0f), vec3(0.25f, 0.25f, 0.25f)) * objects[3]->toWorld;
+		}
+		else if (key == GLFW_KEY_2) {
+			currObj->spotLightOn = !currObj->spotLightOn;
+			objects[3]->toWorld = translate(mat4(1.0f), currObj->spotLight.position * 6.5f);
+			objects[3]->toWorld = scale(mat4(1.0f), vec3(0.25f, 0.25f, 0.25f)) * objects[3]->toWorld;
+		}
+		else if (key == GLFW_KEY_3) {
+			currObj->dirLightOn = !currObj->dirLightOn;
+			objects[3]->toWorld = translate(mat4(1.0f), currObj->dirLight.position * 6.5f);
+			objects[3]->toWorld = scale(mat4(1.0f), vec3(0.25f, 0.25f, 0.25f)) * objects[3]->toWorld;
+		}
+		else if (key == GLFW_KEY_0) lightControl = !lightControl;
+		if (currObj->spotLightOn) {
+			if (key == GLFW_KEY_E) {
+				if (mods == GLFW_MOD_SHIFT) {
+					//if (currObj->spotLight.exponent < 100.0f)
+						//currObj->spotLightK--;
+				}
+				else if (mods != GLFW_MOD_SHIFT) {
+					//if (currObj->spotLight.exponent > 0.0f)
+						//currObj->spotLightK++;
+				}
+			}
+			else if (key == GLFW_KEY_W) {
+				if (mods == GLFW_MOD_SHIFT) {
+					currObj->spotLight.position *= 1.1;
+				}
+				else if (mods != GLFW_MOD_SHIFT) {
+					currObj->spotLight.position *= 0.9;
+				}
+			}
+		}
+	}
 }
 
 void Window::cursor_position_callback(GLFWwindow* window, double x, double y) {
@@ -195,31 +247,59 @@ void Window::cursor_position_callback(GLFWwindow* window, double x, double y) {
 	auto last = toTrackBall(mouseInitPos);
 	auto curr = toTrackBall(mouseCurPos);
 
-	if (leftClick) leftClicking(last, curr);
+	if (!lightControl && leftClick) leftClicking(last, curr);
+	else if (leftClick) leftClicking(last, curr);
 
 	mouseInitPos = mouseCurPos;
 }
 
 void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-
 	glfwGetCursorPos(window, &xCursor, &yCursor);
 	mouseInitPos = vec3((float)xCursor, (float)yCursor, 0.0f);
 
 	if (action == GLFW_PRESS) {
 		if (button == GLFW_MOUSE_BUTTON_LEFT) leftClick = true;
-		else if (button == GLFW_MOUSE_BUTTON_RIGHT) rightClick = true;
 	}
 	else if (action == GLFW_RELEASE) {
 		if (button == GLFW_MOUSE_BUTTON_LEFT) leftClick = false;
-		else if (button == GLFW_MOUSE_BUTTON_RIGHT) rightClick = false;
 	}
+}
 
+void Window::cursor_scroll_callback(GLFWwindow* window, double x, double y) {
+	auto scaleV = vec3(0.0f, 0.0f, (float)y) * 0.8f;
+
+	if (!lightControl)
+		currObj->toWorld = translate(mat4(1.0f), scaleV) * currObj->toWorld;
+
+	else if (lightControl) {
+
+		if (currObj->potLightOn) {
+
+			auto last = currObj->potLight.position;
+			if (y < 0) currObj->potLight.position *= 1.1f;
+			else if (y > 0) currObj->potLight.position *= 0.9f;
+			auto curr = currObj->potLight.position;
+			vec3 movVec = vec3(curr.x - last.x, curr.y - last.y, curr.z - last.z);
+			objects[3]->toWorld = translate(mat4(1.0f), movVec) * objects[3]->toWorld;
+
+		}
+		else if (currObj->spotLightOn) {
+
+			auto last = currObj->spotLight.position;
+			if (y < 0) currObj->spotLight.position *= 1.1f;
+			else if (y > 0) currObj->spotLight.position *= 0.9f;
+			auto curr = currObj->spotLight.position;
+			vec3 movVec = vec3(curr.x - last.x, curr.y - last.y, curr.z - last.z);
+			objects[3]->toWorld = translate(mat4(1.0f), movVec) * objects[3]->toWorld;
+
+		}
+	}
 }
 
 vec3 Window::toTrackBall(vec3 v) {
 	float w = (float)Window::width, h = (float)Window::height;
-	float x = -(2.0f * v.x - w) / w;
-	float y = (2.0f * v.y - h) / h;
+	float x = (2.0f * v.x - w) / w;
+	float y = -(2.0f * v.y - h) / h;
 	auto vNew = vec3(x, y, 0.0f);
 	auto d = length(vNew);
 	d = d < 1.0f ? d : 1.0f;
@@ -235,8 +315,18 @@ void Window::leftClicking(vec3 last, vec3 curr) {
 		auto rotAxis = cross(last, curr);
 		auto rotAngle = velocity * 10.0f;
 		if (rotAngle > 360.0f || rotAngle < -360.0f) rotAngle = 0.0f;
-		cam_pos = mat3(rotate(mat4(1.0f), rotAngle / 180.0f * pi<float>(), rotAxis)) * cam_pos;
-		V = lookAt(cam_pos, cam_look_at, cam_up);
+		/*cam_pos = mat3(rotate(mat4(1.0f), rotAngle / 180.0f * pi<float>(), rotAxis)) * cam_pos;
+		V = lookAt(cam_pos, cam_look_at, cam_up);*/
+		if (!lightControl)
+			currObj->toWorld = rotate(mat4(1.0f), rotAngle / 180.0f * pi<float>(), rotAxis) * currObj->toWorld;
+		else {
+			objects[3]->toWorld = rotate(mat4(1.0f), rotAngle / 180.0f * pi<float>(), rotAxis) * objects[3]->toWorld;
+			if (currObj->potLightOn)
+				currObj->potLight.position = mat3(rotate(mat4(1.0f), (rotAngle / 180.0f * pi<float>()), rotAxis)) * currObj->potLight.position;
+			else if (currObj->spotLightOn)
+				currObj->spotLight.position = mat3(rotate(mat4(1.0f), (rotAngle / 180.0f * pi<float>()), rotAxis)) * currObj->spotLight.position;
+			else if (currObj->dirLightOn)
+				currObj->dirLight.position = mat3(rotate(mat4(1.0f), (rotAngle / 180.0f * pi<float>()), rotAxis)) * currObj->dirLight.position;
+		}
 	}
-
 }

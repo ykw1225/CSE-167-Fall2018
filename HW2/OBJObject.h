@@ -34,14 +34,28 @@ struct Comb {
 	}
 };
 
+struct potLight {
+	vec3 color;
+	vec3 position;
+};
+
+struct Light {
+	vec3 color;
+	vec3 position;
+	vec3 coneDir;
+	float cutoff;
+	float exponent;
+};
+
 class OBJObject {
 private:
-	mat4 toWorld;
 	vector<unsigned int> indices;
 	vector<vec3> vertices, normals, colors, randVer, altColors;
-	float angle, xMin, xMax, yMin, yMax, zMin, zMax, speed;
+	float angle, xMin, xMax, yMin, yMax, zMin, zMax, speed, shininess;
 	GLuint VBO, VAO, EBO;
 	vector<Comb> combs;
+	int mateType;
+	mat3 material;
 
 	void spin(float);
 	void minMax(float, float, float);
@@ -50,12 +64,17 @@ private:
 	void verMove();
 	void floatChange(float&, float);
 	void setupPipeline();
+	void setupMaterial();
+	void setupLights();
 	
 public:
+	mat4 toWorld;
 	float point;
-	bool alterColor;
-	OBJObject(string filepath);
-	void parse(string filepath);
+	bool alterColor, dirLightOn, potLightOn, spotLightOn;
+	Light potLight, spotLight, dirLight;
+
+	OBJObject(string, int);
+	void parse(string);
 	void draw(GLuint);
 	void update();
 	void scaleUp() { toWorld = scale(toWorld, vec3(1.2f, 1.2f, 1.2f)); }

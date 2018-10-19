@@ -1,18 +1,23 @@
 #include "OBJObject.h"
 #include "Window.h"
 
+vec3 camPos(0.0f, 0.0f, 20.0f);
+
 float OBJObject::randFloat(float min, float max) {
 	return(max - min) * ((((float)rand()) / (float)RAND_MAX)) + min;
 }
 
-OBJObject::OBJObject(string filepath) {
+OBJObject::OBJObject(string filepath, int i) {
 	speed = 0.003f;
-	alterColor = false;
+	dirLightOn = potLightOn = spotLightOn = alterColor = false;
 	angle = 0.0f;
 	point = 1.0f;
 	toWorld = mat4(1.0f);
 	xMax = yMax = zMax = FLT_MIN;
 	xMin = yMin = zMin = FLT_MAX;
+	mateType = i;
+	setupMaterial();
+	setupLights();
 	parse(filepath);
 	setupPipeline();
 }
@@ -127,14 +132,35 @@ void OBJObject::draw(GLuint shaderProgram) {
 	auto view = Window::V;
 	auto proj = Window::P;
 	auto model = toWorld;
+	auto isPhong = Window::isPhong;
 
-	auto uProjection = glGetUniformLocation(shaderProgram, "projection");
-	auto uView = glGetUniformLocation(shaderProgram, "view");
-	auto uToWorld = glGetUniformLocation(shaderProgram, "model");
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"),
+		1, GL_FALSE, &Window::P[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"),
+		1, GL_FALSE, &view[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"),
+		1, GL_FALSE, &model[0][0]);
+	glUniformMatrix3fv(glGetUniformLocation(shaderProgram, "material"),
+		1, GL_FALSE, &material[0][0]);
+	glUniform1f(glGetUniformLocation(shaderProgram, "shininess"), shininess);
+	glUniform1f(glGetUniformLocation(shaderProgram, "isPhong"), isPhong);
+	glUniform3fv(glGetUniformLocation(shaderProgram, "camPos"), 1, &(camPos[0]));
 
-	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
-	glUniformMatrix4fv(uView, 1, GL_FALSE, &view[0][0]);
-	glUniformMatrix4fv(uToWorld, 1, GL_FALSE, &model[0][0]);
+	glUniform3fv(glGetUniformLocation(shaderProgram, "potCol"), 1, &(potLight.color[0]));
+	glUniform3fv(glGetUniformLocation(shaderProgram, "potPos"), 1, &(potLight.position[0]));
+
+	glUniform3fv(glGetUniformLocation(shaderProgram, "spotCol"), 1, &(spotLight.color[0]));
+	glUniform3fv(glGetUniformLocation(shaderProgram, "spotPos"), 1, &(spotLight.position[0]));
+	glUniform3fv(glGetUniformLocation(shaderProgram, "spotConeDir"), 1, &(spotLight.coneDir[0]));
+	glUniform1f(glGetUniformLocation(shaderProgram, "spotExp"), spotLight.exponent);
+	glUniform1f(glGetUniformLocation(shaderProgram, "spotCutoff"), spotLight.cutoff);
+
+	glUniform3fv(glGetUniformLocation(shaderProgram, "dirCol"), 1, &(dirLight.color[0]));
+	glUniform3fv(glGetUniformLocation(shaderProgram, "dirPos"), 1, &(dirLight.position[0]));
+	
+	glUniform1f(glGetUniformLocation(shaderProgram, "potLightOn"), potLightOn);
+	glUniform1f(glGetUniformLocation(shaderProgram, "spotLightOn"), spotLightOn);
+	glUniform1f(glGetUniformLocation(shaderProgram, "dirLightOn"), dirLightOn);
 
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, (GLsizei)(indices.size()), GL_UNSIGNED_INT, 0);
@@ -177,7 +203,7 @@ void OBJObject::centerAndScale() {
 	for (int i = 0; i < vertices.size(); i++) {
 		vertices[i] -= center;
 		vertices[i] /= scaler;
-		vertices[i] *= 4.0f;
+		vertices[i] *= 2.0f;
 	}
 
 	// determine the new min and max after scaling
@@ -222,4 +248,52 @@ void OBJObject::setupPipeline() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+}
+
+void OBJObject::setupMaterial() {
+	vec3 ambient, diffuse, specular;
+	switch (mateType) {
+	case 0:
+		ambient = vec3(0.1745f, 0.01175f, 0.01175f);
+		diffuse = vec3(0.0f, 0.0f, 0.0f);
+		specular = vec3(0.9f, 0.9f, 0.9f);
+		shininess = 1.0f;
+		break;
+	case 1:
+		ambient = vec3(0.1745f, 0.01175f, 0.01175f);
+		diffuse = vec3(0.9f, 0.9f, 0.9f);
+		specular = vec3(0.0f, 0.0f, 0.0f);
+		shininess = 0.0f;
+		break;
+	case 2:
+		ambient = vec3(0.1745f, 0.01175f, 0.01175f);
+		diffuse = vec3(0.7f, 0.7f, 0.7f);
+		specular = vec3(0.7f, 0.7f, 0.7f);
+		shininess = 1.0f;
+		break;
+		break;
+	case 3:
+		ambient = vec3(1.0f, 1.0f, 1.0f);
+		diffuse = specular = vec3(0.0f, 0.0f, 0.0f);
+		shininess = 1.0f;
+		break;
+	default:
+		ambient = diffuse = specular = vec3(0.0f, 0.0f, 0.0f);
+		shininess = 1.0f;
+	}
+	material = mat3(ambient, diffuse, specular);
+}
+
+void OBJObject::setupLights() {
+	potLight.color = vec3(0.0f, 1.0f, 0.0f);
+	potLight.position = vec3(0.0f, -1.0f, 1.0f);
+
+	spotLight.color = vec3(0.0f, 0.0f, 1.0f);
+	spotLight.position = vec3(0.0f, -1.0f, 1.0f);
+	spotLight.coneDir = vec3(0.0f, -1.0f, 1.0f);
+	spotLight.exponent = 1.0f;
+	spotLight.cutoff = (30.0f / 180.0f * pi<float>());
+
+	dirLight.color = vec3(1.0f, 0.0f, 0.0f);
+	dirLight.position = vec3(0.0f, -1.0f, 1.0f);
 }
