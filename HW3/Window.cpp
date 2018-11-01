@@ -4,15 +4,6 @@ const char* window_title = "GLFW Starter Project";
 // Cube * cube;
 GLint shaderProgram;
 
-// Objects
-vector<OBJObject*> Window::objects;
-
-// pointer to current display obj
-Node* currObj;
-
-// tracker of current point size
-GLfloat Window::currPoint;
-
 // tracker of current mouse position
 vec3 Window::mouseCurPos;
 
@@ -26,21 +17,6 @@ bool Window::rightClick = false;
 // tracker of the x and y value of cursor
 double Window::xCursor;
 double Window::yCursor;
-
-Geo* h;
-Geo* lArm;
-Geo* rArm;
-Geo* b;
-Geo* lLeg;
-Geo* rLeg;
-
-MT* modelMtx;
-MT* hMtx;
-MT* lArmMtx;
-MT* rArmMtx;
-MT* bMtx;
-MT* lLegMtx;
-MT* rLegMtx;
 
 // On some systems you need to change this to the absolute path
 #define VERTEX_SHADER_PATH "../shader.vert"
@@ -61,72 +37,17 @@ int Window::height;
 mat4 Window::P;
 mat4 Window::V;
 
-void Window::addObj(string filePath) {
-	objects.push_back(new OBJObject(filePath));
-}
+Robot *robot;
 
 void Window::initialize_objects() {
-	// cube = new Cube();
-
-	string body = "body_s.obj", head = "head_s.obj", limb = "limb_s.obj";
-	
-	h = new Geo(head);
-	lArm = new Geo(limb);
-	rArm = new Geo(limb);
-	b = new Geo(body);
-	lLeg = new Geo(limb);
-	rLeg = new Geo(limb);
-
-
-	modelMtx = new MT(mat4(1.0f));
-	hMtx = new MT(mat4(1.0f));
-	lArmMtx = new MT(translate(mat4(1.0f), vec3(-1.3f, -0.9f, 0.0f)));
-	rArmMtx = new MT(translate(mat4(1.0f), vec3(+1.3f, -0.9f, 0.0f)));
-	bMtx = new MT(translate(mat4(1.0f), vec3(0.0f, -1.1f, 0.0f)));
-	lLegMtx = new MT(translate(mat4(1.0f), vec3(-0.6f, -2.7f, 0.0f)));
-	rLegMtx = new MT(translate(mat4(1.0f), vec3(+0.6f, -2.7f, 0.0f)));
-
-	modelMtx->addChild(hMtx);
-	modelMtx->addChild(lArmMtx);
-	modelMtx->addChild(rArmMtx);
-	modelMtx->addChild(bMtx);
-	modelMtx->addChild(lLegMtx);
-	modelMtx->addChild(rLegMtx);
-
-	hMtx->addChild(h);
-	lArmMtx->addChild(lArm);
-	rArmMtx->addChild(rArm);
-	bMtx->addChild(b);
-	lLegMtx->addChild(lLeg);
-	rLegMtx->addChild(rLeg);
-
-
-	currObj = modelMtx;
-
+	robot = new Robot();
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
 void Window::clean_up() {
-	// delete(cube);
-
-	for (auto i : objects) delete i;
-
-	delete h;
-	delete lArm;
-	delete rArm;
-	delete lLeg;
-	delete rLeg;
-	delete b;
-	delete modelMtx;
-	delete hMtx;
-	delete lArmMtx;
-	delete rArmMtx;
-	delete lLegMtx;
-	delete rLegMtx;
-	delete bMtx;
-
+	delete robot;
 	glDeleteProgram(shaderProgram);
 }
 
@@ -193,7 +114,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height) {
 
 void Window::idle_callback() {
 	// Call the update function the cube
-	currObj->update();
+	robot->update();
 }
 
 void Window::display_callback(GLFWwindow* window) {
@@ -205,7 +126,7 @@ void Window::display_callback(GLFWwindow* window) {
 	
 	// Render the cube
 	// cube->draw(shaderProgram);
-	currObj->draw(mat4(1.0f), shaderProgram);
+	robot->draw(mat4(1.0f), shaderProgram);
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();

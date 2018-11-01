@@ -1,5 +1,5 @@
-#ifndef GEO_H_
-#define GEO_H_
+#ifndef _GEO_H_
+#define _GEO_H_
 
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>

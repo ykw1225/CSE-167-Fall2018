@@ -1,5 +1,5 @@
-#ifndef OBJOBJECT_H
-#define OBJOBJECT_H
+#ifndef _OBJOBJECT_H
+#define _OBJOBJECT_H
 
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>
