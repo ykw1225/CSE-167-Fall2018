@@ -24,11 +24,11 @@ private:
 	OBJObject* obj;
 
 public:
-	Geo(string filepath) { obj = new OBJObject(filepath); }
+	Geo(string filepath, int i = 0) { obj = new OBJObject(filepath, i); }
 	~Geo() { delete obj; }
-	void draw(mat4 C, GLuint shaderProgram) {
+	void draw(mat4 C, GLuint shader) {
 		modelview = C;
-		obj->draw(C, shaderProgram);
+		obj->draw(C, shader);
 	}
 	void update() { obj->update(); }
 };

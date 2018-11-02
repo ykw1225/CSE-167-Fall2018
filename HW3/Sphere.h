@@ -1,5 +1,5 @@
-#ifndef _OBJOBJECT_H
-#define _OBJOBJECT_H
+#ifndef _SPHERE_H
+#define _SPHERE_H
 
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>
@@ -20,31 +20,31 @@
 using namespace std;
 using namespace glm;
 
-struct Comb {
+struct Combb {
 	vec3 vertex;
-	vec2 texCoor;
-	Comb(vec3 v, vec2 t) {
+	vec3 normal;
+	vec3 color;
+	Combb(vec3 v, vec3 n, vec3 c) {
 		vertex = v;
-		texCoor = t;
+		normal = n;
+		color = c;
 	}
 };
 
-class OBJObject {
+class Sphere {
 private:
 	vector<unsigned int> indices;
 	vector<vec3> vertices, normals, colors;
-	vector<vec2> texCoors;
-	GLuint VBO, VAO, EBO, textureID;
-	vector<Comb> combs;
-	int i;
+	GLuint VBO, VAO, EBO;
+	vector<Combb> combs;
 
-	void parse(string);
 	void setupPipeline();
 
 public:
 	mat4 toWorld;
 
-	OBJObject(string, int);
+	Sphere(string, mat4);
+	void parse(string);
 	void draw(mat4, GLuint);
 	void update();
 };

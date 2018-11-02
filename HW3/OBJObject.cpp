@@ -9,7 +9,7 @@ GLuint loadTexture() {
 	unsigned char* tdata;  // texture pixel data
 
 	// Load image file
-	tdata = stbi_load("tex1.jpg", &twidth, &theight, &nrComponents, 0);
+	tdata = stbi_load("tex3.jpg", &twidth, &theight, &nrComponents, 0);
 	if (tdata == NULL) cout << "Faile to load image." << endl;
 
 	// Create ID for texture
@@ -28,7 +28,8 @@ GLuint loadTexture() {
 	return id;
 }
 
-OBJObject::OBJObject(string filepath) {
+OBJObject::OBJObject(string filepath, int i) {
+	this->i = i;
 	toWorld = mat4(1.0f);
 	parse(filepath);
 	setupPipeline();
@@ -107,6 +108,7 @@ void OBJObject::parse(string filepath) {
 }
 
 void OBJObject::draw(mat4 C, GLuint shaderProgram) {
+	glUseProgram(shaderProgram);
 	auto proj = Window::P;
 	auto modelView = Window::V * toWorld * C;
 
@@ -114,8 +116,9 @@ void OBJObject::draw(mat4 C, GLuint shaderProgram) {
 		1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelView"),
 		1, GL_FALSE, &modelView[0][0]);
-	glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
+	glUniform1i(glGetUniformLocation(shaderProgram, "tex"), i);
 
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, (GLsizei)(indices.size()), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
@@ -139,9 +142,6 @@ void OBJObject::setupPipeline() {
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Comb), (GLvoid*)offsetof(Comb, vertex));
-
-	/*glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Comb), (GLvoid*)offsetof(Comb, texCoor));*/
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * indices.size(), &(indices[0]), GL_STATIC_DRAW);

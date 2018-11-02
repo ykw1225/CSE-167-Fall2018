@@ -12,7 +12,7 @@
 #include <GLFW/glfw3.h>
 #include "shader.h"
 
-#include "Robot.h"
+#include "Army.h"
 
 using namespace std;
 using namespace glm;

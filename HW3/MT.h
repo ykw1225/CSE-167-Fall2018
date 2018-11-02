@@ -25,18 +25,19 @@ private:
 	vec3 rotateVec, transtVec;
 	vector<Node*> children;
 	float delta = 0.7f;
-	int counter = 0;
+	int counter = 0, angle;
 
 public:
-	MT(mat4 m, vec3 r, vec3 t){
+	MT(mat4 m, vec3 r, vec3 t, int a = 80){
 		M = m;
 		rotateVec = r;
 		transtVec = t;
+		angle = a;
 	}
 	void addChild(Node* n) { children.push_back(n); }
-	void draw(mat4 C, GLuint shaderProgram) { for (auto i : children) i->draw(C * M, shaderProgram); }
+	void draw(mat4 C, GLuint shader) { for (auto i : children) i->draw(C * M, shader); }
 	void update() { 
-		if (counter < 100) {
+		if (counter < angle) {
 			M = translate(M, transtVec);
 			M = rotate(M, delta / 180.0f * pi<float>(), rotateVec);
 			M = translate(M, -transtVec);
@@ -48,6 +49,7 @@ public:
 		}
 		for (auto i : children) i->update();
 	}
+	mat4 getM() { return M; }
 };
 
 #endif

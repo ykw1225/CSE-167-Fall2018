@@ -2,7 +2,7 @@
 
 const char* window_title = "GLFW Starter Project";
 // Cube * cube;
-GLint shaderProgram;
+GLint shaderProgram, shaderSphere;
 
 // tracker of current mouse position
 vec3 Window::mouseCurPos;
@@ -37,18 +37,20 @@ int Window::height;
 mat4 Window::P;
 mat4 Window::V;
 
-Robot *robot;
+Army *army;
 
 void Window::initialize_objects() {
-	robot = new Robot();
+	army = new Army();
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
+	shaderSphere = LoadShaders("../shaderSphere.vert", "../shaderSphere.frag");
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
 void Window::clean_up() {
-	delete robot;
+	delete army;
 	glDeleteProgram(shaderProgram);
+	glDeleteProgram(shaderSphere);
 }
 
 GLFWwindow* Window::create_window(int width, int height) {
@@ -114,19 +116,14 @@ void Window::resize_callback(GLFWwindow* window, int width, int height) {
 
 void Window::idle_callback() {
 	// Call the update function the cube
-	robot->update();
+	army->update();
 }
 
 void Window::display_callback(GLFWwindow* window) {
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Use the shader of programID
-	glUseProgram(shaderProgram);
-	
-	// Render the cube
-	// cube->draw(shaderProgram);
-	robot->draw(mat4(1.0f), shaderProgram);
+	army->draw(mat4(1.0f), shaderProgram, shaderSphere);
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
