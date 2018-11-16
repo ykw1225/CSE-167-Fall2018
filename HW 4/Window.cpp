@@ -244,18 +244,18 @@ void Window::mouse_button_callback(GLFWwindow* window, int button, int action, i
 		if (button == GLFW_MOUSE_BUTTON_LEFT) {
 			leftClick = true;
 			if (pointClick) {
-				curPt+=3;
+				curPt++;
 				if (curPt == 24) curPt = 0;
 			}
 		}
 		if (button == GLFW_MOUSE_BUTTON_RIGHT) {
 			rightClick = true;
 			if (pointClick) {
-				curPt-=3;
-				if (curPt == -3) curPt = 21;
+				curPt--;
+				if (curPt == -1) curPt = 23;
 			}
 		}
-		cout << curPt << endl;
+		// cout << curPt << endl;
 	}
 	else if (action == GLFW_RELEASE) {
 		if (button == GLFW_MOUSE_BUTTON_LEFT) leftClick = false;
@@ -289,15 +289,30 @@ void Window::leftClicking(vec3 last, vec3 curr) {
 }
 
 void Window::pointControling(vec3 v) {
-	vec3 temp = track->pts[curPt]->move(v * 2.0f);
-	track->pts[(curPt + 1) % 24]->move(v);
-	track->pts[(curPt + 23) % 24]->move(v);
-	track->update(curPt / 3, 1, temp);
-	if (curPt != 0) track->update((curPt / 3 + 23) % 24, 4, temp);
-	else track->update(7, 4, temp);
+	vec3 temp;
+	if (curPt % 3 == 0) {
+		temp = track->pts[curPt]->move(v * 2.0f);
+		track->pts[(curPt + 1) % 24]->move(v);
+		track->pts[(curPt + 23) % 24]->move(v);
+		track->update(curPt / 3, 1, temp);
+		if (curPt != 0) track->update((curPt / 3 + 23) % 24, 4, temp);
+		else track->update(7, 4, temp);
 
-	temp = track->pts[(curPt + 23) % 24]->move(v);
-	track->update((curPt + 23) % 24 / 3, 3, temp);
-	temp = track->pts[(curPt + 1) % 24]->move(v);
-	track->update((curPt + 1) / 3, 2, temp);
+		temp = track->pts[(curPt + 23) % 24]->move(v);
+		track->update((curPt + 23) % 24 / 3, 3, temp);
+		temp = track->pts[(curPt + 1) % 24]->move(v);
+		track->update((curPt + 1) / 3, 2, temp);
+	}
+	else if (curPt % 3 == 1) {
+		temp = track->pts[curPt]->move(v);
+		track->update(curPt / 3, 2, temp);
+		temp = track->pts[(curPt + 22) % 24]->move(-v);
+		track->update((curPt + 22) % 24 / 3, 3, temp);
+	}
+	else if (curPt % 3 == 2) {
+		temp = track->pts[curPt]->move(v);
+		track->update(curPt / 3, 3, temp);
+		temp = track->pts[(curPt + 2) % 24]->move(-v);
+		track->update((curPt + 2) % 24 / 3, 2, temp);
+	}
 }
