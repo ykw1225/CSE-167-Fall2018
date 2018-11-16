@@ -1,5 +1,5 @@
-#ifndef CURVE_h
-#define CURVE_h
+#ifndef _CURVE_h
+#define _CURVE_h
 
 #define GLFW_INCLUDE_GLEXT
 #ifdef __APPLE__
@@ -15,20 +15,23 @@
 using namespace std;
 using namespace glm;
 
+class Curve {
+private:
+	mat4x3 m;
+	
+	vec4 calCT(float t);
+	void setupPipeline();
+	void setupPipelinePt();
+	void findVert(vec3, vec3);
 
-class Curve{
-    public:
-		Curve();
-		~Curve();
-		void setup();
-		void draw(GLuint);
-		vec3 getPos();
+public:
+	mat4 toWorld;
+	GLuint VBO, VAO, VCO, VDO;
+	vector<vec3> controlPoints, vertQ, vertPts;
 
-		vector<vec3> ctrlPoints, points;
-		vector<int> indices;
-		int pointsNum, seg, currIndex;
-		vec3 currPos;
-		GLuint VBO, VAO, EBO;
+	Curve() {}
+	Curve(vec3, vec3, vec3, vec3);
+	void draw(GLuint);
+	void update(GLuint, vec3);
 };
-
 #endif

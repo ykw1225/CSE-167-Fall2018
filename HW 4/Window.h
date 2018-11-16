@@ -14,6 +14,7 @@
 
 #include "Skybox.h"
 #include "Sphere.h"
+#include "Track.h"
 
 using namespace std;
 using namespace glm;
@@ -36,15 +37,16 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
 	static vec3 mouseCurPos, mouseInitPos;
-	static bool leftClick, rightClick;
+	static bool leftClick, rightClick, pointClick, go, FPP;
 	static double xCursor, yCursor;
-	static vec3 cam_pos, cam_look_at, cam_up;
+	static vec3 cam_pos, cam_look_at, cam_up, camPos, camLookAt, camUp;
 
 	static void cursor_position_callback(GLFWwindow*, double, double);
 	static void mouse_button_callback(GLFWwindow*, int, int, int);
 	static vec3 toTrackBall(vec3);
 	static void leftClicking(vec3, vec3);
-	static void cursor_scroll_callback(GLFWwindow* window, double x, double y);
+	static void reCalCam();
+	static void pointControling(vec3);
 };
 
 #endif

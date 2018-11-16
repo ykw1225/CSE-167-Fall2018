@@ -22,22 +22,22 @@ void Skybox::loadTextures() {
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-	tdata = stbi_load("rt.png", &twidth, &theight, &nrComponents, 0);
+	tdata = stbi_load("rt.jpg", &twidth, &theight, &nrComponents, 0);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, tdata);
 
-	tdata = stbi_load("lf.png", &twidth, &theight, &nrComponents, 0);
+	tdata = stbi_load("lf.jpg", &twidth, &theight, &nrComponents, 0);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, tdata);
 	
-	tdata = stbi_load("up.png", &twidth, &theight, &nrComponents, 0);
+	tdata = stbi_load("up.jpg", &twidth, &theight, &nrComponents, 0);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, tdata);
 	
-	tdata = stbi_load("dn.png", &twidth, &theight, &nrComponents, 0);
+	tdata = stbi_load("dn.jpg", &twidth, &theight, &nrComponents, 0);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, tdata);
 	
-	tdata = stbi_load("bk.png", &twidth, &theight, &nrComponents, 0);
+	tdata = stbi_load("bk.jpg", &twidth, &theight, &nrComponents, 0);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, tdata);
 	
-	tdata = stbi_load("ft.png", &twidth, &theight, &nrComponents, 0);
+	tdata = stbi_load("ft.jpg", &twidth, &theight, &nrComponents, 0);
 	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, tdata);
 
 	// Use bilinear interpolation:

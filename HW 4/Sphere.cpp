@@ -27,7 +27,7 @@ void Sphere::parse(string filepath) {
 		// check if this line is a vertex
 		if (block == "v") {
 			readFile >> vx >> vy >> vz;
-			vertices.push_back(vec3(vx, vy, vz));
+			vertices.push_back(vec3(vx, vy, vz)*0.2f);
 		}
 		// check if this line is a vertex normal
 		else if (block == "vn") {
@@ -73,7 +73,8 @@ void Sphere::draw(GLuint shaderProgram) {
 		1, GL_FALSE, &model[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"),
 		1, GL_FALSE, &view[0][0]);
-	glUniform3fv(glGetUniformLocation(shaderProgram, "cameraPos"), 1, &Window::cam_pos[0]);
+	if(Window::FPP) glUniform3fv(glGetUniformLocation(shaderProgram, "cameraPos"), 1, &Window::camPos[0]);
+	else glUniform3fv(glGetUniformLocation(shaderProgram, "cameraPos"), 1, &Window::cam_pos[0]);
 	glUniform1i(glGetUniformLocation(shaderProgram, "skybox"), 0);
 
 	glEnable(GL_CULL_FACE);
@@ -110,4 +111,8 @@ void Sphere::setupPipeline() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+}
+
+void Sphere::move(vec3 v) {
+	toWorld = translate(mat4(1.0f), v);
 }

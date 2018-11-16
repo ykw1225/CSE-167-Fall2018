@@ -44,9 +44,11 @@ public:
 	mat4 toWorld;
 	unsigned int textureID;
 
+
 	Sphere();
 	void parse(string);
 	void draw(GLuint);
+	void move(vec3);
 };
 
 #endif

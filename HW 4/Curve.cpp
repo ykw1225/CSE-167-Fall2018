@@ -1,90 +1,119 @@
-#include "Curve.h"
 #include "Window.h"
+#include "Curve.h"
 
-Curve::Curve() {
-	pointsNum = 1;
-	seg = 2000;
-	float scaler = 2.0f;
+int i = 0;
 
-	ctrlPoints.push_back(vec3(-50.0f, 40.0f, 50.0f) * scaler);
-	ctrlPoints.push_back(vec3(-30.0f, 30.0f, 0.0f) * scaler);
-	ctrlPoints.push_back(vec3(10.0f, 20.0f, 0.0f) * scaler);
-	ctrlPoints.push_back(vec3(30.0f, 20.0f, 50.0f) * scaler);
+Curve::Curve(vec3 c1, vec3 c2, vec3 c3, vec3 c4) {
+	toWorld = mat4(1.0f);
 
-	ctrlPoints.push_back(vec3(20.0f, -10.0f, 50.0f) * scaler);
-	ctrlPoints.push_back(vec3(10.0f, 10.0f, 0.0f) * scaler);
-	ctrlPoints.push_back(vec3(-30.0f, 0.0f, 0.0f) * scaler);
-	ctrlPoints.push_back(vec3(-20.0f, 10.0f, 50.0f) * scaler);
+	controlPoints.push_back(c1);
+	controlPoints.push_back(c2);
+	controlPoints.push_back(c3);
+	controlPoints.push_back(c4);
 
-	ctrlPoints.push_back(vec3(10.0f, 20.0f, 0.0f) * scaler);
-	ctrlPoints.push_back(vec3(30.0f, 20.0f, 50.0f) * scaler);
-	ctrlPoints.push_back(vec3(-30.0f, 30.0f, 0.0f) * scaler);
-	ctrlPoints.push_back(vec3(-50.0f, 40.0f, 50.0f) * scaler);
+	vertPts.push_back(c1);
+	vertPts.push_back(c2);
+	vertPts.push_back(c3);
 
-	ctrlPoints.push_back(vec3(-10.0f, 20.0f, 0.0f) * scaler);
-	ctrlPoints.push_back(vec3(20.0f, -10.0f, 0.0f) * scaler);
-	ctrlPoints.push_back(vec3(30.0f, 10.0f, 50.0f) * scaler);
-	ctrlPoints.push_back(vec3(10.0f, -20.0f, 50.0f) * scaler);
+	m[0] = c1;
+	m[1] = c2;
+	m[2] = c3;
+	m[3] = c4;
 
-	ctrlPoints.push_back(vec3(20.0f, 10.0f, 0.0f) * scaler);
-	ctrlPoints.push_back(vec3(10.0f, 10.0f, 0.0f) * scaler);
-	ctrlPoints.push_back(vec3(-30.0f, -10.0f, 50.0f) * scaler);
-	ctrlPoints.push_back(vec3(-40.0f, 20.0f, 0.0f) * scaler);
+	vec3 q0 = m[0];
+	vec3 q1 = m[3];
 
-	setup();
+	findVert(q0, q1);
+
+	setupPipeline();
+	setupPipelinePt();
 }
 
-Curve::~Curve() {
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
+void Curve::draw(GLuint shaderProgram){
+	glUseProgram(shaderProgram);
+
+	auto model = toWorld;
+	auto view = Window::V;
+	auto projection = Window::P;
+
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"),
+		1, GL_FALSE, &projection[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"),
+		1, GL_FALSE, &model[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"),
+		1, GL_FALSE, &view[0][0]);
+
+	glPointSize(5);
+	glBindVertexArray(VAO);
+
+	glLineWidth(3);
+	glDrawArrays(GL_LINES, 0, (GLsizei)vertQ.size());
+	glBindVertexArray(0);
 }
 
-void Curve::setup() {
-    currPos = ctrlPoints[0];
-	for (int i = 0; i < pointsNum; i++) {
-		vec3 p0 = ctrlPoints[3 * i];
-		vec3 p1 = ctrlPoints[3 * i + 1];
-		vec3 p2 = ctrlPoints[3 * i + 2];
-		vec3 p3 = ctrlPoints[(3 * i + 3) % (3 * pointsNum)];
-		for (float j = 0; j < seg; j++) {
-			float t = j / seg;
-			vec3 p = (p3 - 3.0f*p2 + 3.0f*p1 - p0) * t*t*t + (3.0f*p0 - 6.0f* p1 + 3.0f*p2) * t* t + (3.0f*p1 - 3.0f*p0) * t + p0;
-			//vec3 p = pow((1.0f - t), 3.0f)*p0 + 3.0f*t*pow((1.0f - t), 2.0f)*p1 + 3.0f*pow(t, 2.0f)*(1.0f - t)*p2 + pow(t, 3.0f)*p3;
-			points.push_back(p);
-			indices.push_back(i*seg + (int)j);
-			indices.push_back(i*seg + (int)j + 1);
-		}
-	}
-    points.push_back(points[0]);
-
+void Curve::setupPipeline() {
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
 
 	glBindVertexArray(VAO);
+
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(vec3), points.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertQ.size() * sizeof(vec3), &vertQ[0], GL_STATIC_DRAW);
+
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (GLvoid*)0);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
 
-void Curve::draw(GLuint shaderProgram) {
-	glUseProgram(shaderProgram);
-	auto uProjection = glGetUniformLocation(shaderProgram, "projection");
-	auto uView = glGetUniformLocation(shaderProgram, "view");
-	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
-	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
-	glBindVertexArray(VAO);
-	glDrawElements(GL_LINE_LOOP, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
+void Curve::setupPipelinePt() {
+	glGenVertexArrays(1, &VDO);
+	glGenBuffers(1, &VCO);
+
+	glBindVertexArray(VDO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VCO);
+	glBufferData(GL_ARRAY_BUFFER, vertQ.size() * sizeof(vec3), &vertPts[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (GLvoid*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-	currIndex++;
-	currIndex = currIndex > points.size() - 1 ? 0 : currIndex;
-	currPos = points[currIndex];
 }
 
-vec3 Curve::getPos() { return currPos; }// translate(mat4(1.0f), currPos + vec3(0.5f, 0.5f, 0.0f)); }
+void Curve::update(GLuint mod, vec3 control_point) {
+	controlPoints[mod - 1] = control_point;
+	m[0] = controlPoints[0];
+	m[1] = controlPoints[1];
+	m[2] = controlPoints[2];
+	m[3] = controlPoints[3];
+	vec3 q0 = m[0];
+	vec3 q1 = m[3];
+
+	vertQ.clear();
+	findVert(q0, q1);
+	setupPipeline();
+}
+
+vec4 Curve::calCT(float t) {
+	vec4 ct;
+	ct.x = pow((1 - t), 3);
+	ct.y = 3 * t * pow((1 - t), 2);
+	ct.z = 3 * (1 - t) * pow(t, 2);
+	ct.w = pow(t, 3);
+	return ct;
+}
+
+void Curve::findVert(vec3 q0, vec3 q1) {
+	vertQ.push_back(q0);
+
+	for (float i = 0.01f; i < 1.0f; i = i + 0.01f) {
+		vec4 ctQ = calCT(i);
+		vec3 ptQ = m * ctQ;
+		vertQ.push_back(ptQ);
+		vertQ.push_back(ptQ);
+	}
+	vertQ.push_back(q1);
+}
